@@ -262,8 +262,6 @@ config CPU_FREQ_GOV_LIONHEART
 	depends on CPU_FREQ
 	help
 	 Use the CPUFreq governor 'lionheart' as default.
-	 
-config 
 
 comment "CPU frequency scaling drivers"
 

@@ -4,10 +4,10 @@ on:
     inputs:
       INPUT_LOCALVERSION:
         description: 'Describe localversion for kernel'
-        required: true
+        required: false
       INPUT_KERNEL_REVISION:
         description: 'Describe kernel revision [release-ci only]'
-        required: true
+        required: false
       INPUT_KSU_BRANCH:
         description: 'KernelSU branch [ignore if no KSU]'
         required: true

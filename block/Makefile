@@ -24,6 +24,12 @@ obj-$(CONFIG_MQ_IOSCHED_DEADLINE)	+= mq-deadline.o
 obj-$(CONFIG_MQ_IOSCHED_KYBER)	+= kyber-iosched.o
 bfq-y				:= bfq-iosched.o bfq-wf2q.o bfq-cgroup.o
 obj-$(CONFIG_IOSCHED_BFQ)	+= bfq.o
+obj-$ (CONFIG_IOSCHED_FIFO) += fifo.o
+obj-$ (CONFIG_IOSCHED_ROW)  += row.o
+obj-$ (CONFIG_IOSCHED_SIOPLUS) += sioplus.o
+obj-$ (CONFIG_IOSCHED_FIOPS) += fiops.o
+obj-$ (CONFIG_IOSCHED_SIO) += sio.o
+obj-$ (CONFIG_IOSCHED_ZEN) += zen.o
 
 obj-$(CONFIG_BLOCK_COMPAT)	+= compat_ioctl.o
 obj-$(CONFIG_BLK_CMDLINE_PARSER)	+= cmdline-parser.o

@@ -40,6 +40,12 @@ config CFQ_GROUP_IOSCHED
 	---help---
 	  Enable group IO scheduling in CFQ.
 
+config IOSCHED_ZEN
+	bool
+	default y
+	---help---
+	  zen
+
 choice
 
 	prompt "Default I/O scheduler"

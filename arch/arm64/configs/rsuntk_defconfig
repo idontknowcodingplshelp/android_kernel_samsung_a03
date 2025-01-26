@@ -5087,3 +5087,5 @@ CONFIG_SBITMAP=y
 # KUnit support
 #
 # CONFIG_TEST is not set
+#Custom configs
+CONFIG_PRLMK=y

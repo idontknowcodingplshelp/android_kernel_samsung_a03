@@ -52,7 +52,7 @@ if [[ $GIT_KSU_STATE = 'true' ]]; then
 		if [[ $GIT_KSU_BRANCH = 'dev' ]]; then
 			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s main
 		elif [[ $GIT_KSU_BRANCH = 'stable' ]]; then
-			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -
+			curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 		fi
 	fi
 	

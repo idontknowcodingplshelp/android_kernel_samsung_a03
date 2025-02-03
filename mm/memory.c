@@ -2608,7 +2608,7 @@ static inline bool cow_user_page(struct page *dst, struct page *src,
 		kunmap_atomic(kaddr);
 		flush_dcache_page(dst);
 	} else {
- 		copy_user_highpage(dst, src, va, vma);
+ 		copy_user_highpage(dst, src, vma);
 		uksm_cow_page(vma, src);
 	}
 
@@ -2637,7 +2637,7 @@ warn:
 
 	ret = true;
 
-pte_unlock;
+pte_unmap_unlock(pte, ptl);
 	if (locked)
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 	kunmap_atomic(kaddr);

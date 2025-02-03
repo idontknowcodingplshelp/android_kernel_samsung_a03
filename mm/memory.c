@@ -2630,11 +2630,7 @@ static inline bool cow_user_page(struct page *dst, struct page *src,
 			 * Give a warn in case there can be some obscure
 			 * use-case
 			 */
-warn:
-			WARN_ON_ONCE(1);
-			clear_page(kaddr);
-		}
-	}
+
 
 	ret = true;
 

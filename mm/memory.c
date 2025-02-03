@@ -40,6 +40,7 @@
 
 #include <linux/kernel_stat.h>
 #include <linux/mm.h>
+#include <linux/mm_types.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/coredump.h>
 #include <linux/sched/numa_balancing.h>
@@ -70,7 +71,6 @@
 #include <linux/userfaultfd_k.h>
 #include <linux/dax.h>
 #include <linux/oom.h>
-
 #include <asm/io.h>
 #include <asm/mmu_context.h>
 #include <asm/pgalloc.h>
@@ -2603,15 +2603,14 @@ static inline bool cow_user_page(struct page *dst, struct page *src,
 	 * in which case we just give up and fill the result with
 	 * zeroes.
 	 */
-		if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE))
-			clear_page(kaddr);
-		kunmap_atomic(kaddr, KM_USER0);
+	if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE)) {
+		clear_page(kaddr);
+		kunmap_atomic(kaddr);
 		flush_dcache_page(dst);
 	} else {
  		copy_user_highpage(dst, src, va, vma);
 		uksm_cow_page(vma, src);
 	}
- }
 
 		/* Re-validate under PTL if the page is still mapped */
 		vmf->pte = pte_offset_map_lock(mm, vmf->pmd, addr, &vmf->ptl);
@@ -2635,11 +2634,10 @@ warn:
 			WARN_ON_ONCE(1);
 			clear_page(kaddr);
 		}
-	}
 
 	ret = true;
 
-pte_unlock:
+pte_unlock;
 	if (locked)
 		pte_unmap_unlock(vmf->pte, vmf->ptl);
 	kunmap_atomic(kaddr);

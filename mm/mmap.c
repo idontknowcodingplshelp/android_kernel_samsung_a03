@@ -1075,7 +1075,7 @@ again:
 	if (insert && file)
 		uprobe_mmap(insert);
 	
-	+	uksm_vma_add_new(vma);
+		uksm_vma_add_new(vma);
 	if (next && next != vma)
 		vm_raw_write_end(next);
 

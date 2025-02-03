@@ -2630,7 +2630,7 @@ static inline bool cow_user_page(struct page *dst, struct page *src,
 			 * Give a warn in case there can be some obscure
 			 * use-case
 			 */
-
+		}
 
 	ret = true;
 

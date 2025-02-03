@@ -2634,6 +2634,7 @@ warn:
 			WARN_ON_ONCE(1);
 			clear_page(kaddr);
 		}
+	}
 
 	ret = true;
 

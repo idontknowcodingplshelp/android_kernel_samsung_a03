@@ -2884,19 +2884,21 @@ void __init setup_nr_node_ids(void);
 static inline void setup_nr_node_ids(void) {}
 #endif
 
-#ifdef CONFIG_PROCESS_RECLAIM
 struct reclaim_param {
 	void *private;
-	/* Number of pages scanned */
 	int nr_scanned;
-	/* max pages to reclaim */
 	int nr_to_reclaim;
-	/* pages reclaimed */
 	int nr_reclaimed;
 	bool is_task_anon;
 };
-extern struct reclaim_param reclaim_task_anon(struct task_struct *task,
-		int nr_to_reclaim);
+
+#ifdef CONFIG_PROCESS_RECLAIM
+extern struct reclaim_param reclaim_task_anon(struct task_struct *task, int nr_to_reclaim);
+#else
+static inline struct reclaim_param reclaim_task_anon(struct task_struct *task, int nr_to_reclaim) {
+	struct reclaim_param rp = {NULL, 0, 0, 0, false};
+	return rp;
+}
 #endif
 
 #endif /* __KERNEL__ */

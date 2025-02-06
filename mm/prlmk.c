@@ -303,6 +303,17 @@ get_heaviest:
 }
 
 static void reclaim_tasks(void)
+#ifndef CONFIG_PROCESS_RECLAIM
+struct reclaim_param {
+    void *private;
+    int nr_scanned;
+    int nr_to_reclaim;
+    int nr_reclaimed;
+    bool is_task_anon;
+};
+extern struct reclaim_param reclaim_task_anon(struct task_struct *task,
+		int nr_to_reclaim);
+#endif
 {
 	struct reclaim_param rp;
 	int alimit = atask_limit();

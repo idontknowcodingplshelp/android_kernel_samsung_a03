@@ -3094,8 +3094,13 @@ out:
 		zram_set_handle(zram, index, handle);
 		zram_set_obj_size(zram, index, comp_len);
 #ifdef CONFIG_ZRAM_LRU_WRITEBACK
+#ifdef CONFIG_MEMCG
 		if (!page->mem_cgroup ||
-		    page->mem_cgroup->swappiness != NON_LRU_SWAPPINESS) {
+		    page->mem_cgroup->swappiness != NON_LRU_SWAPPINESS)
+#else
+		if (1) // Always execute if MEMCG is disabled
+#endif
+		{
 			spin_lock_irqsave(&zram->list_lock, irq_flags);
 			list_add_tail(&zram->table[index].lru_list, &zram->list);
 			spin_unlock_irqrestore(&zram->list_lock, irq_flags);

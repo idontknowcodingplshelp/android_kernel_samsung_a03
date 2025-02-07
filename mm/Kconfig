@@ -907,8 +907,7 @@ source "mm/sec_mm/Kconfig"
 config PRLMK
 	bool "Enable PRLMK"
 	depends on TASK_XACCT && ZRAM
-	depends on !MEMCG
-	depends on !PROCESS_RECLAIM && !ANDROID_LOW_MEMORY_KILLER && !ANDROID_SIMPLE_LMK
+	depends on !ANDROID_LOW_MEMORY_KILLER && !ANDROID_SIMPLE_LMK
 	default n
 	help
 	  PRLMK is a custom low-memory-killer for Android, based on the process reclaim driver.

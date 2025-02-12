@@ -3439,7 +3439,7 @@ CONFIG_SYNC_FILE=y
 # CONFIG_AUXDISPLAY is not set
 # CONFIG_UIO is not set
 # CONFIG_VIRT_DRIVERS is not set
-CONFIG_VIRTIO=y
+CONFIG_VIRTIO=n
 
 #
 # Virtio drivers

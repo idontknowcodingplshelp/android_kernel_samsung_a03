@@ -28,22 +28,6 @@
 #include <linux/vmpressure.h>
 
 /*
- * The window size (vmpressure_win) is the number of scanned pages before
- * we try to analyze scanned/reclaimed ratio. So the window is used as a
- * rate-limit tunable for the "low" level notification, and also for
- * averaging the ratio for medium/critical levels. Using small window
- * sizes can cause lot of false positives, but too big window size will
- * delay the notifications.
- *
- * As the vmscan reclaimer logic works with chunks which are multiple of
- * SWAP_CLUSTER_MAX, it makes sense to use it for the window size as well.
- *
- * TODO: Make the window size depend on machine size, as we do for vmstat
- * thresholds. Currently we set it to 512 pages (2MB for 4KB pages).
- */
-static unsigned long vmpressure_win = SWAP_CLUSTER_MAX * 16;
-
-/*
  * These thresholds are used when we account memory pressure through
  * scanned/reclaimed ratio. The current values were chosen empirically. In
  * essence, they are percents: the higher the value, the more number
@@ -272,8 +256,9 @@ static void vmpressure_work_fn(struct work_struct *work)
 }
 
 #ifdef CONFIG_MEMCG
-static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
-		unsigned long scanned, unsigned long reclaimed)
+static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
+			     bool tree, unsigned long scanned,
+			     unsigned long reclaimed)
 {
 	struct vmpressure *vmpr = memcg_to_vmpressure(memcg);
 
@@ -299,7 +284,9 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
 	 * (scanning depth) goes too high (deep), we will be notified
 	 * through vmpressure_prio(). But so far, keep calm.
 	 */
-	if (!scanned)
+	if (critical)
+		scanned = calculate_vmpressure_win();
+	else if (!scanned)
 		return;
 
 	if (tree) {
@@ -308,7 +295,7 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
 		vmpr->tree_reclaimed += reclaimed;
 		spin_unlock(&vmpr->sr_lock);
 
-		if (scanned < vmpressure_win)
+		if (!critical && scanned < calculate_vmpressure_win())
 			return;
 		schedule_work(&vmpr->work);
 	} else {
@@ -322,7 +309,7 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
 		spin_lock(&vmpr->sr_lock);
 		scanned = vmpr->scanned += scanned;
 		reclaimed = vmpr->reclaimed += reclaimed;
-		if (scanned < vmpressure_win) {
+		if (!critical && scanned < calculate_vmpressure_win()) {
 			spin_unlock(&vmpr->sr_lock);
 			return;
 		}
@@ -346,10 +333,9 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
 	}
 }
 #else
-static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
-		unsigned long scanned, unsigned long reclaimed)
-{
-}
+static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
+			     bool tree, unsigned long scanned,
+			     unsigned long reclaimed) { }
 #endif
 
 static void calculate_vmpressure_win(void)
@@ -418,37 +404,6 @@ static void vmpressure_global(gfp_t gfp, unsigned long scanned,
 }
 
 /**
- * vmpressure() - Account memory pressure through scanned/reclaimed ratio
- * @gfp:	reclaimer's gfp mask
- * @memcg:	cgroup memory controller handle
- * @tree:	legacy subtree mode
- * @scanned:	number of pages scanned
- * @reclaimed:	number of pages reclaimed
- *
- * This function should be called from the vmscan reclaim path to account
- * "instantaneous" memory pressure (scanned/reclaimed ratio). The raw
- * pressure index is then further refined and averaged over time.
- *
- * If @tree is set, vmpressure is in traditional userspace reporting
- * mode: @memcg is considered the pressure root and userspace is
- * notified of the entire subtree's reclaim efficiency.
- *
- * If @tree is not set, reclaim efficiency is recorded for @memcg, and
- * only in-kernel users are notified.
- *
- * This function does not return any value.
- */
-void vmpressure(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
-		unsigned long scanned, unsigned long reclaimed)
-{
-	if (!memcg)
-		vmpressure_global(gfp, scanned, reclaimed);
-
-	if (IS_ENABLED(CONFIG_MEMCG))
-		vmpressure_memcg(gfp, memcg, tree, scanned, reclaimed);
-}
-
-/**
  * vmpressure_prio() - Account memory pressure through reclaimer priority level
  * @gfp:	reclaimer's gfp mask
  * @memcg:	cgroup memory controller handle
@@ -475,7 +430,7 @@ void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg, int prio)
 	 * to the vmpressure() basically means that we signal 'critical'
 	 * level.
 	 */
-	vmpressure(gfp, memcg, true, vmpressure_win, 0);
+	__vmpressure(gfp, memcg, true, true, 0, 0);
 }
 
 static enum vmpressure_levels str_to_level(const char *arg)
@@ -536,7 +491,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
 	/* Find required level */
 	token = strsep(&spec, ",");
 	level = str_to_level(token);
-	if (level == -1) {
+	if ((int)level == -1) {
 		ret = -EINVAL;
 		goto out;
 	}
@@ -545,7 +500,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
 	token = strsep(&spec, ",");
 	if (token) {
 		mode = str_to_mode(token);
-		if (mode == -1) {
+		if ((int)mode == -1) {
 			ret = -EINVAL;
 			goto out;
 		}

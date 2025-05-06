@@ -4297,7 +4297,7 @@ static inline bool prepare_alloc_pages(gfp_t gfp_mask, unsigned int order,
 		*alloc_flags |= ALLOC_CMA;
 
 	return true;
-
+}
 
 /* Determine whether to spread dirty pages and what the first usable zone */
 static inline void finalise_ac(gfp_t gfp_mask,

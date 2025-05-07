@@ -276,6 +276,7 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
 	if (!(gfp & (__GFP_HIGHMEM | __GFP_MOVABLE | __GFP_IO | __GFP_FS)))
 		return;
 
+
 	/*
 	 * If we got here with no pages scanned, then that is an indicator
 	 * that reclaimer was unable to find any shrinkable LRUs at the
@@ -339,7 +340,7 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
 #endif
 
 static void vmpressure_global(gfp_t gfp, unsigned long scanned, bool critical,
-			      unsigned long reclaimed)
+			      unsigned long reclaimed);
 
 static unsigned long calculate_vmpressure_win(void)
 {

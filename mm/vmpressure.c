@@ -338,7 +338,7 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
 			     unsigned long reclaimed) { }
 #endif
 
-static void calculate_vmpressure_win(void)
+static unsigned long calculate_vmpressure_win(void)
 {
 	long x;
 
@@ -357,8 +357,7 @@ static void calculate_vmpressure_win(void)
 	 * cached is high. The sqaure root function is empirically
 	 * found to serve the purpose.
 	 */
-	x = int_sqrt(x);
-	vmpressure_win = x;
+	return int_sqrt(x);
 }
 
 static void vmpressure_global(gfp_t gfp, unsigned long scanned,
@@ -389,7 +388,7 @@ static void vmpressure_global(gfp_t gfp, unsigned long scanned,
 	reclaimed = vmpr->reclaimed;
 	spin_unlock(&vmpr->sr_lock);
 
-	if (scanned < vmpressure_win)
+		if (!critical && scanned < calculate_vmpressure_win())
 		return;
 
 	spin_lock(&vmpr->sr_lock);
@@ -430,7 +429,7 @@ void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg, int prio)
 	 * to the vmpressure() basically means that we signal 'critical'
 	 * level.
 	 */
-	__vmpressure(gfp, memcg, true, true, 0, 0);
+	vmpressure(gfp, memcg, true, true, 0, 0);
 }
 
 static enum vmpressure_levels str_to_level(const char *arg)

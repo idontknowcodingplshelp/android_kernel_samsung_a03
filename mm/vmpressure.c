@@ -383,6 +383,47 @@ static void vmpressure_global(gfp_t gfp, unsigned long scanned, bool critical,
 	vmpressure_notify(pressure);
 }
 
+static void __vmpressure(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
+			 bool tree, unsigned long scanned,
+			 unsigned long reclaimed)
+{
+	if (!memcg && tree)
+		vmpressure_global(gfp, scanned, critical, reclaimed);
+
+	if (IS_ENABLED(CONFIG_MEMCG))
+		vmpressure_memcg(gfp, memcg, critical, tree, scanned, reclaimed);
+}
+
+/**
+ * vmpressure() - Account memory pressure through scanned/reclaimed ratio
+ * @gfp:	reclaimer's gfp mask
+ * @memcg:	cgroup memory controller handle
+ * @tree:	legacy subtree mode
+ * @scanned:	number of pages scanned
+ * @reclaimed:	number of pages reclaimed
+ *
+ * This function should be called from the vmscan reclaim path to account
+ * "instantaneous" memory pressure (scanned/reclaimed ratio). The raw
+ * pressure index is then further refined and averaged over time.
+ *
+ * If @tree is set, vmpressure is in traditional userspace reporting
+ * mode: @memcg is considered the pressure root and userspace is
+ * notified of the entire subtree's reclaim efficiency.
+ *
+ * If @tree is not set, reclaim efficiency is recorded for @memcg, and
+ * only in-kernel users are notified.
+ *
+ * This function does not return any value.
+ */
+void vmpressure(gfp_t gfp, struct mem_cgroup *memcg, bool tree,
+		unsigned long scanned, unsigned long reclaimed, int order)
+{
+	if (order > PAGE_ALLOC_COSTLY_ORDER)
+		return;
+
+	__vmpressure(gfp, memcg, false, tree, scanned, reclaimed);
+}
+
 /**
  * vmpressure_prio() - Account memory pressure through reclaimer priority level
  * @gfp:	reclaimer's gfp mask
@@ -413,13 +454,7 @@ void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg, int prio)
 	__vmpressure(gfp, memcg, true, true, 0, 0);
 }
 
-{
-	if (!memcg && tree)
-		vmpressure_global(gfp, scanned, critical, reclaimed);
-
-	if (IS_ENABLED(CONFIG_MEMCG))
-		vmpressure_memcg(gfp, memcg, critical, tree, scanned, reclaimed);
-}static unsigned long calculate_vmpressure_win(void)
+static unsigned long calculate_vmpressure_win(void)
 
 {
 	long x;

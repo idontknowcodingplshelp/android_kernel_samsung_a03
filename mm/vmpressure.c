@@ -477,36 +477,6 @@ static unsigned long calculate_vmpressure_win(void)
 	return int_sqrt(x);
 }
 
-/**
- * vmpressure_prio() - Account memory pressure through reclaimer priority level
- * @gfp:	reclaimer's gfp mask
- * @memcg:	cgroup memory controller handle
- * @prio:	reclaimer's priority
- *
- * This function should be called from the reclaim path every time when
- * the vmscan's reclaiming priority (scanning depth) changes.
- *
- * This function does not return any value.
- */
-void vmpressure_prio(gfp_t gfp, struct mem_cgroup *memcg, int prio)
-{
-	/*
-	 * We only use prio for accounting critical level. For more info
-	 * see comment for vmpressure_level_critical_prio variable above.
-	 */
-	if (prio > vmpressure_level_critical_prio)
-		return;
-
-	/*
-	 * OK, the prio is below the threshold, updating vmpressure
-	 * information before shrinker dives into long shrinking of long
-	 * range vmscan. Passing scanned = vmpressure_win, reclaimed = 0
-	 * to the vmpressure() basically means that we signal 'critical'
-	 * level.
-	 */
-	vmpressure(gfp, memcg, true, true, 0, 0);
-}
-
 static enum vmpressure_levels str_to_level(const char *arg)
 {
 	enum vmpressure_levels level;

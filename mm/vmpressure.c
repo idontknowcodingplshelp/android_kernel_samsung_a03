@@ -366,8 +366,8 @@ static unsigned long calculate_vmpressure_win(void)
 	return int_sqrt(x);
 }
 
-static void vmpressure_global(gfp_t gfp, unsigned long scanned,
-		unsigned long reclaimed)
+static void vmpressure_global(gfp_t gfp, unsigned long scanned, bool critical,
+			      unsigned long reclaimed)
 {
 	struct vmpressure *vmpr = &global_vmpressure;
 	unsigned long pressure;
@@ -394,8 +394,8 @@ static void vmpressure_global(gfp_t gfp, unsigned long scanned,
 	reclaimed = vmpr->reclaimed;
 	spin_unlock(&vmpr->sr_lock);
 
-		if (!critical && scanned < calculate_vmpressure_win())
-		return;
+	if (!critical && scanned < calculate_vmpressure_win())
+	return;
 
 	spin_lock(&vmpr->sr_lock);
 	vmpr->scanned = 0;

@@ -27,6 +27,8 @@
 #include <linux/module.h>
 #include <linux/vmpressure.h>
 
+static unsigned long calculate_vmpressure_win(void);
+
 /*
  * These thresholds are used when we account memory pressure through
  * scanned/reclaimed ratio. The current values were chosen empirically. In

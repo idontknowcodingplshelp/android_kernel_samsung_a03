@@ -343,8 +343,57 @@ static void vmpressure_memcg(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
 
 static void vmpressure_global(gfp_t gfp, unsigned long scanned, bool critical,
 			      unsigned long reclaimed);
+{
+	struct vmpressure *vmpr = &global_vmpressure;
+	unsigned long pressure;
+	unsigned long stall;
 
-static unsigned long calculate_vmpressure_win(void)
+	if (critical)
+		scanned = calculate_vmpressure_win();
+
+	if (scanned) {
+		spin_lock(&vmpr->sr_lock);
+		vmpr->scanned += scanned;
+		vmpr->reclaimed += reclaimed;
+
+		if (!current_is_kswapd())
+			vmpr->stall += scanned;
+
+		stall = vmpr->stall;
+		scanned = vmpr->scanned;
+		reclaimed = vmpr->reclaimed;
+		spin_unlock(&vmpr->sr_lock);
+
+		if (!critical && scanned < calculate_vmpressure_win())
+			return;
+	}
+
+	spin_lock(&vmpr->sr_lock);
+	vmpr->scanned = 0;
+	vmpr->reclaimed = 0;
+	vmpr->stall = 0;
+	spin_unlock(&vmpr->sr_lock);
+
+	if (scanned) {
+		pressure = vmpressure_calc_pressure(scanned, reclaimed);
+		pressure = vmpressure_account_stall(pressure, stall, scanned);
+	} else {
+		pressure = 100;
+	}
+	vmpressure_notify(pressure);
+}
+
+static void __vmpressure(gfp_t gfp, struct mem_cgroup *memcg, bool critical,
+			 bool tree, unsigned long scanned,
+			 unsigned long reclaimed)
+{
+	if (!memcg && tree)
+		vmpressure_global(gfp, scanned, critical, reclaimed);
+
+	if (IS_ENABLED(CONFIG_MEMCG))
+		vmpressure_memcg(gfp, memcg, critical, tree, scanned, reclaimed);
+}static unsigned long calculate_vmpressure_win(void)
+
 {
 	long x;
 
@@ -366,8 +415,6 @@ static unsigned long calculate_vmpressure_win(void)
 	return int_sqrt(x);
 }
 
-static void vmpressure_global(gfp_t gfp, unsigned long scanned, bool critical,
-			      unsigned long reclaimed)
 {
 	struct vmpressure *vmpr = &global_vmpressure;
 	unsigned long pressure;

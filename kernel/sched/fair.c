@@ -7018,7 +7018,7 @@ static int sched_idle_cpu(int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
 
-	return unlikely(rq->nr_running == rq->cfs.idle_h_nr_running &&
+	return unlikely(rq->nr_running == rq->h_nr_running &&
 			rq->nr_running);
 }
 

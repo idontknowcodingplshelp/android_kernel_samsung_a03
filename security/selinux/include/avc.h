@@ -21,6 +21,10 @@
 #include "av_permissions.h"
 #include "security.h"
 
+#ifndef AVD_FLAGS_PERMISSIVE
+#define AVD_FLAGS_PERMISSIVE 0x0002
+#endif
+
 #define SI_KERNEL_AVC 888
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP

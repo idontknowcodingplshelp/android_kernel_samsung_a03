@@ -22,7 +22,7 @@ MGSKBT=$RSUDIR/bin/mgskbt
 OUTDIR="$(pwd)/out"
 if [[ $GIT_CI_RELEASE_TYPE = "release" ]]; then
 	DEFCONFIG="rsuntk_defconfig"
-	sed -i 's/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION="_Great_Silicone-v`echo $GIT_KERNEL_REVNUM`"/' "$(pwd)/arch/arm64/configs/$DEFCONFIG"
+	sed -i 's/CONFIG_LOCALVERSION=\"\"/CONFIG_LOCALVERSION="_Great_Silic-v`echo $GIT_KERNEL_REVNUM`"/' "$(pwd)/arch/arm64/configs/$DEFCONFIG"
 elif [[ $GIT_CI_RELEASE_TYPE = "testing" ]]; then
 	DEFCONFIG="rsuci_defconfig"
 fi

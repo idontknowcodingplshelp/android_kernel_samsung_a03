@@ -90,7 +90,7 @@ jobs:
         if [[ $PRE_INPUT_SELINUX_STATE = "true" ]]; then
           export SELINUX_FLAGS="permissive"
         else
-          export SELINUX_FLAGS="enforcing
+          export SELINUX_FLAGS="enforcing"
           export KCFLAGS="-DSELINUX_STATE_PERMISSIVE=0"
           export CPPFLAGS="-DSELINUX_STATE_PERMISSIVE=0"
         fi

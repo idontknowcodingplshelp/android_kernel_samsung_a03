@@ -1131,7 +1131,7 @@ long congestion_wait(int sync, long timeout)
 }
 EXPORT_SYMBOL(congestion_wait);
 
-long congestion_wait_kswapd(int sync, long timeout)More actions
+long congestion_wait_kswapd(int sync, long timeout)
 {
 	long ret;
 	DEFINE_WAIT(wait);

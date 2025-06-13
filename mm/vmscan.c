@@ -2082,7 +2082,7 @@ shrink_inactive_list(unsigned long nr_to_scan, struct lruvec *lruvec,
 		 * they are written so also forcibly stall.
 		 */
 		if (stat.nr_immediate && current_may_throttle())
-			congestion_wait(BLK_RW_ASYNC, HZ/10);
+			congestion_wait_kswapd(BLK_RW_ASYNC, HZ/10);
 	}
 
 	/*

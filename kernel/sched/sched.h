@@ -1929,7 +1929,7 @@ static inline unsigned long capacity_of(int cpu)
 
 static inline unsigned long capacity_orig_of(int cpu)
 {
-	return cpu_rq(cpu)->cpu_capacity_orig;
+	return SCHED_CAPACITY_SCALE;
 }
 
 extern unsigned int sysctl_sched_use_walt_cpu_util;
